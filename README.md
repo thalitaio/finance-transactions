@@ -73,11 +73,17 @@ Mas é claro. Acesse:
 https://finance-transactions-1.onrender.com/
 ```
 
-Baixe os arquivos que estão na pasta samples ou, para facilitar, baixe do e-mail (também enviei por lá).
-Clique em `Choose file` ou arraste o arquivo até a área tracejada.
-Clique no botão `Upload and Process`
+Use os arquivos da pasta `samples/` para testar o upload (também enviado por e-mail):
+- `samples/transactions.json`
+- `samples/transactions.csv`
 
-Obs: Esse deploy é gratuito, então o servidor pode apresentar maior lentidão.
+Passo a passo rápido:
+1. Clique em **Choose file**
+2. Selecione um arquivo de `samples/`
+3. Clique em **Upload & Process**
+4. Consulte as abas **Users**, **Summary** e **Invalid**
+
+> Observação: o deploy usa plano gratuito, então o primeiro acesso pode demorar alguns segundos.
 
 ## Endpoints da API
 
@@ -229,7 +235,9 @@ Os arquivos incluem propositalmente cenários de erro para demonstrar o tratamen
 ├── samples/                 # Arquivos de teste (JSON + CSV)
 ├── docs/
 │   └── decisions.md         # Decisões técnicas detalhadas
-|   └── AI_USAGE.md          # Uso de agentes de IA
+│   └── AI_USAGE.md          # Uso de agentes de IA
+├── frontend/public/
+│   └── favicon.png          # Favicon da aplicação
 ├── docker-compose.yml
 ├── Dockerfile
 ├── render.yaml              # Blueprint para deploy no Render
