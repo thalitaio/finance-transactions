@@ -2,7 +2,8 @@
 
 ## Ferramenta utilizada
 
-- **Cursor IDE** com Claude como assistente de IA (Usei o modelo Opus 4.)
+- **Antigravity** iniciei o levantamento de requisitos e desenho da aplicação por ele, mas logo após vi que não teria tokens para continuar por ele (que seria minha primeira opção)
+- **Cursor IDE** com Claude como assistente de IA (Usei o modelo Opus 4.6)
 - Utilizado durante todo o processo de desenvolvimento: planejamento, geração de código, revisão e documentação
 
 ---
@@ -11,15 +12,15 @@
 
 ### Planejamento e Arquitetura
 - A IA ajudou a estruturar o plano de implementação com base nos requisitos do desafio técnico
-- Propôs a stack tecnológica (Fastify, Prisma, PostgreSQL, React + Vite) com justificativas para cada escolha
+- Propôs parte da stack tecnológica (Fastify, Prisma e PostgreSQL) com justificativas para cada escolha
 - Desenhou o modelo de dados (tabelas `Transaction` e `UserBalance`) e o pipeline de processamento
 
 ### Geração de Código
 - Gerou o scaffolding do projeto (package.json, tsconfig, Docker, estrutura de pastas)
 - Criou o schema Prisma com indexes e constraints apropriados
 - Implementou o pipeline de processamento de transações (validação, deduplicação, ordenação, processamento atômico)
-- Construiu o frontend React com todas as telas obrigatórias
-- Gerou testes unitários e de integração
+- Construiu o frontend React com todas as telas obrigatórias (como vi o node na descrição da vaga, achei melhor simplificar optando por node + react com vite para o frontend)
+- Ajudou a gerar testes unitários e de integração (depois isso foi incrementado, mas foi um excelente ponto de partida)
 
 ---
 

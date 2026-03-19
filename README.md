@@ -66,47 +66,18 @@ cd frontend && npm run dev
 - API: http://localhost:3000
 - Frontend dev: http://localhost:5173
 
-## Deploy Gratuito (Render + Neon)
+## Thalita, estou com preguiça. Consigo testar pelo deploy?
 
-A aplicação pode ser publicada gratuitamente usando **Render** (API + frontend) e **Neon** (PostgreSQL serverless).
-
-### 1. Criar o banco de dados no Neon
-
-1. Acesse [neon.tech](https://neon.tech) e crie uma conta gratuita.
-2. Crie um novo projeto (ex: `inside-transactions`).
-3. Copie a **connection string** fornecida. Ela terá o formato:
-
+Mas é claro. Acesse:
 ```
-postgresql://neondb_owner:senha@ep-xxx.region.aws.neon.tech/neondb?sslmode=require
+https://finance-transactions-1.onrender.com/
 ```
 
-### 2. Publicar no Render
+Baixe os arquivos que estão na pasta samples ou, para facilitar, baixe do e-mail (também enviei por lá).
+Clique em `Choose file` ou arraste o arquivo até a área tracejada.
+Clique no botão `Upload and Process`
 
-1. Faça push do repositório para o GitHub.
-2. Acesse [render.com](https://render.com) e crie uma conta gratuita.
-3. Clique em **New > Web Service** e conecte o repositório GitHub.
-4. O Render detectará o `render.yaml` automaticamente. Confirme as configurações:
-   - **Build Command**: `npm install && cd frontend && npm install && npm run build && cd .. && npx prisma generate && npm run build`
-   - **Start Command**: `npx prisma migrate deploy && npm start`
-5. Em **Environment Variables**, adicione:
-
-| Variável | Valor |
-|---|---|
-| `DATABASE_URL` | Connection string do Neon (passo anterior) |
-| `NODE_ENV` | `production` |
-| `PORT` | `3000` |
-| `LOG_LEVEL` | `info` |
-
-6. Clique em **Create Web Service** e aguarde o deploy.
-
-### Limitações do plano gratuito
-
-| Serviço | Limite |
-|---|---|
-| Render Free | Dorme após 15min de inatividade; ~750h/mês |
-| Neon Free | 0.5 GB de armazenamento; 190h de compute/mês |
-
-Ambos são suficientes para demonstração e avaliação técnica.
+Obs: Esse deploy é gratuito, então o servidor pode apresentar maior lentidão.
 
 ## Endpoints da API
 
@@ -258,10 +229,10 @@ Os arquivos incluem propositalmente cenários de erro para demonstrar o tratamen
 ├── samples/                 # Arquivos de teste (JSON + CSV)
 ├── docs/
 │   └── decisions.md         # Decisões técnicas detalhadas
+|   └── AI_USAGE.md          # Uso de agentes de IA
 ├── docker-compose.yml
 ├── Dockerfile
 ├── render.yaml              # Blueprint para deploy no Render
 ├── .node-version            # Versão do Node para o Render
-├── AI_USAGE.md
 └── README.md
 ```
