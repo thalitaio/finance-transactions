@@ -1,16 +1,27 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { buildApp } from '../../src/app.js';
+import { prisma } from '../../src/infra/database/prisma.js';
 import type { FastifyInstance } from 'fastify';
 
 let app: FastifyInstance;
 
 beforeAll(async () => {
+  await prisma.$connect();
+
+  await prisma.transaction.deleteMany({
+    where: { externalId: { startsWith: 'int-' } },
+  });
+  await prisma.userBalance.deleteMany({
+    where: { userId: { startsWith: 'int-' } },
+  });
+
   app = await buildApp();
   await app.ready();
 });
 
 afterAll(async () => {
   await app.close();
+  await prisma.$disconnect();
 });
 
 describe('Health endpoint', () => {

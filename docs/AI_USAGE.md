@@ -73,7 +73,9 @@
 
 ---
 
-## Exemplo concreto de erro da IA
+## Exemplos concretos de erros da IA
+
+### 1. Retry cego em todos os erros
 
 **Erro:** A IA gerou uma função `withRetry` que fazia retry em **todos** os erros, incluindo erros permanentes como violação de unique constraint. Isso faria o sistema tentar inserir uma transação duplicada 3 vezes antes de falhar — desperdício de recursos e delay desnecessário.
 
@@ -98,3 +100,25 @@ function isTransientError(error: unknown): boolean {
 ```
 
 Essa distinção é comprovada nos testes unitários do `retry.test.ts`, que verificam que erros transitórios são retentados (e eventualmente têm sucesso) enquanto erros permanentes como `"unique constraint violated"` falham na primeira chamada sem retry.
+
+### 2. Testes de integração não-idempotentes
+
+**Erro:** A IA gerou testes de integração com IDs fixos (`int-test-deposit-1`, `int-stress-dep-0`, etc.) sem nenhum mecanismo de limpeza do banco entre execuções. Na primeira rodada, todos os testes passavam. Na segunda rodada, todos os testes que inserem transações falhavam — a idempotência da aplicação corretamente detectava tudo como duplicata, retornando `processed: 0` enquanto os testes esperavam `processed: 1`.
+
+**Como foi identificado:** Ao executar `npm test` pela segunda vez, 6 dos 13 testes de integração falharam com erros como `expected +0 to be 1`. Os logs confirmaram que todas as transações estavam sendo classificadas como `duplicate transaction`.
+
+**Correção:** Adicionei um `beforeAll` no arquivo `api.test.ts` que, antes de iniciar a suite, limpa do banco todas as transações e saldos com prefixo `int-` (prefixo usado exclusivamente pelos testes). Isso garante que os testes são re-executáveis quantas vezes forem necessárias, independente do estado anterior do banco.
+
+```typescript
+beforeAll(async () => {
+  await prisma.$connect();
+  await prisma.transaction.deleteMany({
+    where: { externalId: { startsWith: 'int-' } },
+  });
+  await prisma.userBalance.deleteMany({
+    where: { userId: { startsWith: 'int-' } },
+  });
+  app = await buildApp();
+  await app.ready();
+});
+```
