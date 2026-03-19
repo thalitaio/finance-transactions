@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: inside-transactions
+    runtime: node
+    plan: free
+    buildCommand: |
+      npm install &&
+      cd frontend && npm install && npm run build && cd .. &&
+      npx prisma generate &&
+      npm run build
+    startCommand: npx prisma migrate deploy && npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: LOG_LEVEL
+        value: info
+      - key: RETRY_MAX_ATTEMPTS
+        value: "3"
+      - key: RETRY_BASE_DELAY_MS
+        value: "200"

@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionType {
+  deposit
+  withdraw
+  transfer
+}
+
+enum TransactionStatus {
+  processed
+  invalid
+  duplicate
+}
+
+model Transaction {
+  id           String            @id @default(uuid())
+  externalId   String            @unique @map("external_id")
+  type         TransactionType
+  amount       Decimal           @db.Decimal(15, 2)
+  timestamp    DateTime
+  userId       String?           @map("user_id")
+  fromUserId   String?           @map("from_user_id")
+  toUserId     String?           @map("to_user_id")
+  status       TransactionStatus
+  errorReason  String?           @map("error_reason")
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([status])
+  @@index([timestamp])
+  @@map("transactions")
+}
+
+model UserBalance {
+  userId    String   @id @map("user_id")
+  balance   Decimal  @default(0) @db.Decimal(15, 2)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("user_balances")
+}

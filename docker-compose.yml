@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: inside-postgres
+    environment:
+      POSTGRES_USER: inside
+      POSTGRES_PASSWORD: inside123
+      POSTGRES_DB: inside_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inside -d inside_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inside-api
+    environment:
+      DATABASE_URL: "postgresql://inside:inside123@postgres:5432/inside_db?schema=public"
+      PORT: "3000"
+      NODE_ENV: production
+      LOG_LEVEL: info
+      RETRY_MAX_ATTEMPTS: "3"
+      RETRY_BASE_DELAY_MS: "200"
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

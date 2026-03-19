@@ -1,0 +1,11 @@
+id,type,amount,timestamp,user_id,from_user_id,to_user_id
+dep-101,deposit,500,2026-02-01T08:00:00Z,diana,,
+dep-102,deposit,1200,2026-02-01T09:00:00Z,eve,,
+dep-103,deposit,800,2026-02-01T10:00:00Z,frank,,
+wd-101,withdraw,150,2026-02-02T08:00:00Z,diana,,
+wd-102,withdraw,300,2026-02-02T09:00:00Z,eve,,
+tr-101,transfer,200,2026-02-03T08:00:00Z,,eve,diana
+tr-102,transfer,100,2026-02-03T09:00:00Z,,frank,eve
+inv-101,deposit,-20,2026-02-03T10:00:00Z,diana,,
+inv-102,transfer,50,2026-02-03T11:00:00Z,,diana,diana
+dep-101,deposit,500,2026-02-01T08:00:00Z,diana,,

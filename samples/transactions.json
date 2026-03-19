@@ -1,0 +1,16 @@
+{
+  "transactions": [
+    { "id": "dep-001", "type": "deposit", "amount": 1000, "timestamp": "2026-01-01T08:00:00Z", "user_id": "alice" },
+    { "id": "dep-002", "type": "deposit", "amount": 500, "timestamp": "2026-01-01T09:00:00Z", "user_id": "bob" },
+    { "id": "dep-003", "type": "deposit", "amount": 2000, "timestamp": "2026-01-01T10:00:00Z", "user_id": "charlie" },
+    { "id": "dep-004", "type": "deposit", "amount": 750, "timestamp": "2026-01-02T08:00:00Z", "user_id": "alice" },
+    { "id": "wd-001", "type": "withdraw", "amount": 200, "timestamp": "2026-01-02T09:00:00Z", "user_id": "alice" },
+    { "id": "wd-002", "type": "withdraw", "amount": 100, "timestamp": "2026-01-02T10:00:00Z", "user_id": "bob" },
+    { "id": "tr-001", "type": "transfer", "amount": 150, "timestamp": "2026-01-03T08:00:00Z", "from_user_id": "bob", "to_user_id": "alice" },
+    { "id": "tr-002", "type": "transfer", "amount": 300, "timestamp": "2026-01-03T09:00:00Z", "from_user_id": "charlie", "to_user_id": "bob" },
+    { "id": "inv-001", "type": "deposit", "amount": -50, "timestamp": "2026-01-03T10:00:00Z", "user_id": "alice" },
+    { "id": "inv-002", "type": "transfer", "amount": 100, "timestamp": "2026-01-03T11:00:00Z", "from_user_id": "alice", "to_user_id": "alice" },
+    { "id": "inv-003", "type": "withdraw", "amount": 999999, "timestamp": "2026-01-03T12:00:00Z", "user_id": "bob" },
+    { "id": "dep-001", "type": "deposit", "amount": 1000, "timestamp": "2026-01-01T08:00:00Z", "user_id": "alice" }
+  ]
+}

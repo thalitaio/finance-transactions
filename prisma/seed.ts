@@ -1,0 +1,29 @@
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+const sampleTransactions = [
+  { id: 'seed-dep-1', type: 'deposit', amount: 1000, timestamp: '2026-01-01T08:00:00Z', user_id: 'alice' },
+  { id: 'seed-dep-2', type: 'deposit', amount: 500, timestamp: '2026-01-01T09:00:00Z', user_id: 'bob' },
+  { id: 'seed-dep-3', type: 'deposit', amount: 2000, timestamp: '2026-01-01T10:00:00Z', user_id: 'charlie' },
+  { id: 'seed-wd-1', type: 'withdraw', amount: 200, timestamp: '2026-01-02T08:00:00Z', user_id: 'alice' },
+  { id: 'seed-tr-1', type: 'transfer', amount: 150, timestamp: '2026-01-02T09:00:00Z', from_user_id: 'bob', to_user_id: 'alice' },
+  { id: 'seed-tr-2', type: 'transfer', amount: 300, timestamp: '2026-01-02T10:00:00Z', from_user_id: 'charlie', to_user_id: 'bob' },
+  { id: 'seed-dep-4', type: 'deposit', amount: 750, timestamp: '2026-01-03T08:00:00Z', user_id: 'alice' },
+  { id: 'seed-wd-2', type: 'withdraw', amount: 100, timestamp: '2026-01-03T09:00:00Z', user_id: 'bob' },
+  { id: 'seed-invalid-1', type: 'deposit', amount: -50, timestamp: '2026-01-03T10:00:00Z', user_id: 'alice' },
+  { id: 'seed-invalid-2', type: 'transfer', amount: 100, timestamp: '2026-01-03T11:00:00Z', from_user_id: 'alice', to_user_id: 'alice' },
+  { id: 'seed-dep-1', type: 'deposit', amount: 1000, timestamp: '2026-01-01T08:00:00Z', user_id: 'alice' },
+];
+
+async function main() {
+  console.log('Seeding database via API call...');
+  console.log('Sample transactions payload:');
+  console.log(JSON.stringify({ transactions: sampleTransactions }, null, 2));
+  console.log('\nUse this payload with: POST http://localhost:3000/transactions/batch');
+  console.log('Or upload it as a JSON file via the web interface.');
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());
