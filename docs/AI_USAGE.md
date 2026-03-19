@@ -122,3 +122,30 @@ beforeAll(async () => {
   await app.ready();
 });
 ```
+
+### 3. Duplicidade concorrente gerando falha inesperada
+
+**Erro:** A IA tratava duplicidade apenas com pré-consulta (`findByExternalIds`) antes do processamento. Em concorrência real (duas requisições com o mesmo `id` quase simultâneas), ainda era possível ocorrer conflito de `unique` na inserção final e retornar erro 500.
+
+**Como foi identificado:** Revisão orientada a cenários reais de concorrência mostrou janela de corrida entre o check e o `create`.
+
+**Correção:** Refatorei o fluxo do `processOne()` para registrar a transação primeiro e tratar `P2002` como duplicata de negócio (incrementando `duplicates`/`errors`), sem derrubar a requisição. Também removi código morto (`createManyTransactions`) para reduzir ambiguidade.
+
+### 4. Frontend tratando 422 como erro de rede
+
+**Erro:** A IA passou a validar `res.ok` no upload e isso fez a UI tratar `422` como falha técnica. Porém, neste sistema, `422` também é retorno de negócio válido (ex.: lote totalmente inválido), com payload útil para exibir ao usuário.
+
+**Como foi identificado:** Ao enviar CSV com transações inválidas, o browser mostrava `Failed to load resource: ... 422` e a interface não exibia o resultado consolidado (`processed`, `invalid`, `duplicates`, `errors`).
+
+**Correção:** Ajustei `uploadBatch` para aceitar `422` como resposta válida do endpoint e renderizar normalmente o resultado da API. Somente status não-OK diferentes de `422` passam a gerar exceção de frontend.
+
+### 5. Parser CSV simplificado e tratamento de erro na UI
+
+**Erro:** A IA implementou parser CSV usando `split(',')`, frágil para campos com aspas e vírgulas internas, além de telas que não exibiam erro de fetch de forma consistente.
+
+**Como foi identificado:** Revisão funcional do frontend mostrou risco em arquivos CSV reais e estados de "vazio" em situações que eram, na verdade, erro de carregamento.
+
+**Correção:**  
+- Substituí o parse por um parser manual que respeita aspas e vírgulas em campos quoted (`parseCsvLine`).  
+- Padronizei captura de erro (`catch`) e feedback visual nas páginas `Users`, `UserDetail`, `Summary` e `Invalid`.  
+- Melhorei mensagens no `api.ts` com parsing do payload de erro da API.

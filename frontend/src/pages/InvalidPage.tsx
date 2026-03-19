@@ -5,10 +5,18 @@ export function InvalidPage() {
   const [data, setData] = useState<Paginated<Transaction> | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     setLoading(true);
-    api.getInvalidTransactions(page).then(setData).finally(() => setLoading(false));
+    setError('');
+    api.getInvalidTransactions(page)
+      .then(setData)
+      .catch((err) => {
+        setData(null);
+        setError(err instanceof Error ? err.message : 'Failed to load invalid transactions');
+      })
+      .finally(() => setLoading(false));
   }, [page]);
 
   if (loading) {
@@ -16,6 +24,9 @@ export function InvalidPage() {
   }
 
   if (!data || data.items.length === 0) {
+    if (error) {
+      return <div className="empty">{error}</div>;
+    }
     return <div className="empty">No invalid transactions found.</div>;
   }
 

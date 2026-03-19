@@ -4,9 +4,17 @@ import { api, type Summary } from '../api.ts';
 export function SummaryPage() {
   const [data, setData] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    api.getSummary().then(setData).finally(() => setLoading(false));
+    setError('');
+    api.getSummary()
+      .then(setData)
+      .catch((err) => {
+        setData(null);
+        setError(err instanceof Error ? err.message : 'Failed to load summary');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -14,7 +22,7 @@ export function SummaryPage() {
   }
 
   if (!data) {
-    return <div className="empty">Failed to load summary.</div>;
+    return <div className="empty">{error || 'Failed to load summary.'}</div>;
   }
 
   const totalProcessed = data.deposits.count + data.withdrawals.count + data.transfers.count;

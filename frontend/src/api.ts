@@ -1,8 +1,17 @@
 const BASE = '';
 
+async function parseErrorMessage(res: Response): Promise<string> {
+  try {
+    const payload = await res.json() as { error?: string; message?: string };
+    return payload.error ?? payload.message ?? `HTTP ${res.status}`;
+  } catch {
+    return `HTTP ${res.status}`;
+  }
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(`${BASE}${url}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) throw new Error(await parseErrorMessage(res));
   return res.json();
 }
 
@@ -69,6 +78,9 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ transactions }),
     });
+    if (!res.ok && res.status !== 422) {
+      throw new Error(await parseErrorMessage(res));
+    }
     return res.json();
   },
 };

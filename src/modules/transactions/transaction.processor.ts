@@ -124,11 +124,24 @@ async function processOne(
   try {
     switch (input.type) {
       case 'deposit': {
+        const created = await createTransactionIfNotDuplicate(tx, result, {
+          externalId: input.id,
+          type: 'deposit',
+          amount: input.amount,
+          timestamp: new Date(input.timestamp),
+          userId: input.user_id ?? null,
+          status: 'processed',
+        });
+        if (!created) {
+          return;
+        }
+
         await tx.userBalance.upsert({
           where: { userId: input.user_id! },
           create: { userId: input.user_id!, balance: input.amount },
           update: { balance: { increment: input.amount } },
         });
+        result.processed++;
         break;
       }
       case 'withdraw': {
@@ -138,17 +151,18 @@ async function processOne(
         const currentBalance = userBalance?.balance?.toNumber() ?? 0;
 
         if (currentBalance < input.amount) {
-          await tx.transaction.create({
-            data: {
-              externalId: input.id,
-              type: 'withdraw',
-              amount: input.amount,
-              timestamp: new Date(input.timestamp),
-              userId: input.user_id,
-              status: 'invalid',
-              errorReason: `insufficient balance (has ${currentBalance}, needs ${input.amount})`,
-            },
+          const created = await createTransactionIfNotDuplicate(tx, result, {
+            externalId: input.id,
+            type: 'withdraw',
+            amount: input.amount,
+            timestamp: new Date(input.timestamp),
+            userId: input.user_id ?? null,
+            status: 'invalid',
+            errorReason: `insufficient balance (has ${currentBalance}, needs ${input.amount})`,
           });
+          if (!created) {
+            return;
+          }
           result.invalid++;
           result.errors.push({
             id: input.id,
@@ -157,10 +171,23 @@ async function processOne(
           return;
         }
 
+        const created = await createTransactionIfNotDuplicate(tx, result, {
+          externalId: input.id,
+          type: 'withdraw',
+          amount: input.amount,
+          timestamp: new Date(input.timestamp),
+          userId: input.user_id ?? null,
+          status: 'processed',
+        });
+        if (!created) {
+          return;
+        }
+
         await tx.userBalance.update({
           where: { userId: input.user_id! },
           data: { balance: { decrement: input.amount } },
         });
+        result.processed++;
         break;
       }
       case 'transfer': {
@@ -170,23 +197,37 @@ async function processOne(
         const senderBalance = sender?.balance?.toNumber() ?? 0;
 
         if (senderBalance < input.amount) {
-          await tx.transaction.create({
-            data: {
-              externalId: input.id,
-              type: 'transfer',
-              amount: input.amount,
-              timestamp: new Date(input.timestamp),
-              fromUserId: input.from_user_id,
-              toUserId: input.to_user_id,
-              status: 'invalid',
-              errorReason: `insufficient balance (has ${senderBalance}, needs ${input.amount})`,
-            },
+          const created = await createTransactionIfNotDuplicate(tx, result, {
+            externalId: input.id,
+            type: 'transfer',
+            amount: input.amount,
+            timestamp: new Date(input.timestamp),
+            fromUserId: input.from_user_id ?? null,
+            toUserId: input.to_user_id ?? null,
+            status: 'invalid',
+            errorReason: `insufficient balance (has ${senderBalance}, needs ${input.amount})`,
           });
+          if (!created) {
+            return;
+          }
           result.invalid++;
           result.errors.push({
             id: input.id,
             reason: `insufficient balance (has ${senderBalance}, needs ${input.amount})`,
           });
+          return;
+        }
+
+        const created = await createTransactionIfNotDuplicate(tx, result, {
+          externalId: input.id,
+          type: 'transfer',
+          amount: input.amount,
+          timestamp: new Date(input.timestamp),
+          fromUserId: input.from_user_id ?? null,
+          toUserId: input.to_user_id ?? null,
+          status: 'processed',
+        });
+        if (!created) {
           return;
         }
 
@@ -200,27 +241,42 @@ async function processOne(
           create: { userId: input.to_user_id!, balance: input.amount },
           update: { balance: { increment: input.amount } },
         });
+        result.processed++;
         break;
       }
     }
-
-    await tx.transaction.create({
-      data: {
-        externalId: input.id,
-        type: input.type,
-        amount: input.amount,
-        timestamp: new Date(input.timestamp),
-        userId: input.type !== 'transfer' ? input.user_id ?? null : null,
-        fromUserId: input.type === 'transfer' ? input.from_user_id ?? null : null,
-        toUserId: input.type === 'transfer' ? input.to_user_id ?? null : null,
-        status: 'processed',
-      },
-    });
-
-    result.processed++;
     logger.debug({ txId: input.id, type: input.type }, 'Transaction processed');
   } catch (error) {
     logger.error({ txId: input.id, err: error }, 'Failed to process transaction');
     throw error;
   }
+}
+
+async function createTransactionIfNotDuplicate(
+  tx: PrismaTx,
+  result: ProcessingResult,
+  data: Prisma.TransactionCreateInput,
+): Promise<boolean> {
+  try {
+    await tx.transaction.create({ data });
+    return true;
+  } catch (error) {
+    if (isUniqueExternalIdError(error)) {
+      registerDuplicate(result, data.externalId);
+      return false;
+    }
+    throw error;
+  }
+}
+
+function isUniqueExternalIdError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError
+    && error.code === 'P2002'
+  );
+}
+
+function registerDuplicate(result: ProcessingResult, id: string): void {
+  result.duplicates++;
+  result.errors.push({ id, reason: 'duplicate transaction' });
 }

@@ -1,4 +1,5 @@
 import { logger } from './logger.js';
+import { Prisma } from '@prisma/client';
 
 interface RetryOptions {
   maxAttempts: number;
@@ -12,6 +13,15 @@ const DEFAULT_OPTIONS: RetryOptions = {
 };
 
 function isTransientError(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    // P2034: transaction conflict, safe to retry.
+    return error.code === 'P2034';
+  }
+
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return true;
+  }
+
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     return (
@@ -19,7 +29,9 @@ function isTransientError(error: unknown): boolean {
       message.includes('lock timeout') ||
       message.includes('connection') ||
       message.includes('econnrefused') ||
-      message.includes('serialization failure')
+      message.includes('serialization failure') ||
+      message.includes('too many connections') ||
+      message.includes('timed out')
     );
   }
   return false;

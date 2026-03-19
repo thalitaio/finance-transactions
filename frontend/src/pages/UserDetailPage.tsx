@@ -11,15 +11,21 @@ export function UserDetailPage({ userId, onBack }: Props) {
   const [txData, setTxData] = useState<Paginated<Transaction> | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     setLoading(true);
+    setError('');
     Promise.all([
       api.getUserBalance(userId),
       api.getUserTransactions(userId, page),
     ]).then(([b, t]) => {
       setBalance(b);
       setTxData(t);
+    }).catch((err) => {
+      setBalance(null);
+      setTxData(null);
+      setError(err instanceof Error ? err.message : 'Failed to load user details');
     }).finally(() => setLoading(false));
   }, [userId, page]);
 
@@ -32,6 +38,7 @@ export function UserDetailPage({ userId, onBack }: Props) {
   return (
     <div>
       <button className="back-btn" onClick={onBack}>Back to users</button>
+      {error && <div className="empty">{error}</div>}
 
       {balance && (
         <div className="summary-grid" style={{ marginBottom: '1.5rem' }}>

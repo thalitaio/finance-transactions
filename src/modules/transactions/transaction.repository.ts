@@ -8,13 +8,6 @@ export async function findByExternalIds(externalIds: string[]) {
   });
 }
 
-export async function createManyTransactions(
-  data: Prisma.TransactionCreateManyInput[],
-) {
-  if (data.length === 0) return;
-  await prisma.transaction.createMany({ data, skipDuplicates: true });
-}
-
 export async function findInvalidTransactions(page = 1, limit = 50) {
   const where: Prisma.TransactionWhereInput = {
     status: { in: ['invalid', 'duplicate'] },

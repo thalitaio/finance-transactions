@@ -9,10 +9,18 @@ export function UsersPage({ onSelectUser }: Props) {
   const [data, setData] = useState<Paginated<UserBalance> | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     setLoading(true);
-    api.getUsers(page).then(setData).finally(() => setLoading(false));
+    setError('');
+    api.getUsers(page)
+      .then(setData)
+      .catch((err) => {
+        setData(null);
+        setError(err instanceof Error ? err.message : 'Failed to load users');
+      })
+      .finally(() => setLoading(false));
   }, [page]);
 
   if (loading) {
@@ -20,6 +28,9 @@ export function UsersPage({ onSelectUser }: Props) {
   }
 
   if (!data || data.items.length === 0) {
+    if (error) {
+      return <div className="empty">{error}</div>;
+    }
     return <div className="empty">No users found. Upload transactions first.</div>;
   }
 

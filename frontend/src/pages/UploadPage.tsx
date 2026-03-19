@@ -117,11 +117,11 @@ export function UploadPage() {
 }
 
 function parseCsv(text: string): unknown[] {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map((h) => h.trim());
+  const headers = parseCsvLine(lines[0]).map((h) => h.trim());
   return lines.slice(1).map((line) => {
-    const values = line.split(',').map((v) => v.trim());
+    const values = parseCsvLine(line).map((v) => v.trim());
     const obj: Record<string, unknown> = {};
     headers.forEach((h, i) => {
       const val = values[i];
@@ -133,4 +133,37 @@ function parseCsv(text: string): unknown[] {
     });
     return obj;
   });
+}
+
+function parseCsvLine(line: string): string[] {
+  const values: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const next = line[i + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      current += '"';
+      i++;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === ',' && !inQuotes) {
+      values.push(current);
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+
+  values.push(current);
+  return values;
 }
